@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jan 24 19:52:53 2017
+Copyright (C) 2019 Quentin Peter
 
-@author: quentinpeter
+This file is part of Worms_Inclusions.
+
+Worms_Inclusions is distributed under CC BY-NC-SA version 4.0. You should have
+recieved a copy of the licence along with Worms_Inclusions. If not, see
+https://creativecommons.org/licenses/by-nc-sa/4.0/.
 """
 import matplotlib.image as mpimg
-from wormInclusions import bgThreshold, Scharr_edge, scharrMethod, writeSummary, saveInclusions
+from wormInclusions import (bgThreshold, Scharr_edge,
+                            writeSummary, saveInclusions)
 import numpy as np
-import scipy.ndimage.measurements as msr
 from PyQt5 import QtWidgets
 from glob import glob
-from matplotlib.pyplot import figure, imshow, colorbar
-import matplotlib.pyplot as plt
-import os
 import cv2
 from matplotlib.path import Path
 
@@ -21,7 +22,11 @@ def getvals(bins, data):
     return np.asarray([cv2.connectedComponents(
         cv2.morphologyEx(
             cv2.morphologyEx(
-                np.asarray(data > x, dtype='uint8'), cv2.MORPH_OPEN, np.ones((5, 5))), cv2.MORPH_CLOSE, np.ones((3, 3)))
+                np.asarray(data > x, dtype='uint8'),
+                cv2.MORPH_OPEN,
+                np.ones((5, 5))),
+            cv2.MORPH_CLOSE,
+            np.ones((3, 3)))
     )[0] - 1 for x in bins[:-1]])
 
 
@@ -150,7 +155,7 @@ class applicationCore():
         return float(self.getRatioText())
 
     def loadFolder(self, folder):
-        if folder[-1] is not '/':
+        if folder[-1] != '/':
             folder += '/'
         self.fns = sorted(glob(folder + '*.tif'))
         print(folder, str(len(self.fns)))
@@ -208,21 +213,20 @@ class applicationCore():
         else:
             self.imageCanvas.standalone()
         del self.X0roi
-        
+
     def onLassoSelect(self, poly_verts):
         ny, nx = self.im.shape
         x, y = np.meshgrid(np.arange(nx), np.arange(ny))
         x, y = x.flatten(), y.flatten()
-        
-        points = np.vstack((x,y)).T
-        
+
+        points = np.vstack((x, y)).T
+
         mask = Path(poly_verts).contains_points(points)
-        mask = mask.reshape((ny,nx))
-        
+        mask = mask.reshape((ny, nx))
+
         im = np.asarray(mpimg.imread(self.fns[self.i]), float)
         im[np.logical_not(mask)] = np.nan
         self.setimage(im)
-        
 
     def onROIReset(self):
         self.setimage(self.originalim)
@@ -246,7 +250,7 @@ class applicationCore():
     def onEnd(self):
         writeSummary(self.fn[:self.fn.rfind('/')] + '/summary.txt',
                      self.im_npwp, self.im_intensity, self.im_size,
-                     self.im_index, 
+                     self.im_index,
                      self.fns, self.skipped)
         for i in range(self.i, len(self.fns)):
             self.skipped.append(i)

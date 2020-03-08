@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jan 24 17:19:17 2017
+Copyright (C) 2019 Quentin Peter
 
-@author: quentinpeter
+This file is part of Worms_Inclusions.
+
+Worms_Inclusions is distributed under CC BY-NC-SA version 4.0. You should have
+recieved a copy of the licence along with Worms_Inclusions. If not, see
+https://creativecommons.org/licenses/by-nc-sa/4.0/.
 """
 
 import matplotlib
@@ -52,12 +56,12 @@ class imageCanvas(MyMplCanvas):
         MyMplCanvas.__init__(self, *args, **kwargs)
         self.axes = self.figure.add_subplot(111)
         self.cbar = None
-        
-        
+
+
     def createLasso(self, onLassoSelect):
         self.lasso = LassoSelector(self.axes, onLassoSelect,
                                    lineprops=dict(color='w'))
-        
+
     def setimage(self, im):
         self.im = im
 #        if hasattr(self, 'ROIrect'):

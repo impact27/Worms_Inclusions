@@ -1,5 +1,13 @@
 # -*- coding: utf-8 -*-
+"""
+Copyright (C) 2019 Quentin Peter
 
+This file is part of Worms_Inclusions.
+
+Worms_Inclusions is distributed under CC BY-NC-SA version 4.0. You should have
+recieved a copy of the licence along with Worms_Inclusions. If not, see
+https://creativecommons.org/licenses/by-nc-sa/4.0/.
+"""
 
 # Configuration (use * for any matching patern)
 
@@ -44,11 +52,11 @@ def Scharr_edge(im):
     res = cv2.magnitude(Gx, Gy)
     angle = np.arctan2(Gy, Gx)
     return res, angle
-#%
 
 
 def bgThreshold(im):
-    bgIntensity = np.bincount(np.ravel(np.array(im[np.isfinite(im)], dtype=int)))[:-1].argmax()
+    bgIntensity = np.bincount(
+        np.ravel(np.array(im[np.isfinite(im)], dtype=int)))[:-1].argmax()
     return 2 * bgIntensity - np.nanmin(im)
 
 
@@ -92,10 +100,11 @@ def writeSummary(fn, im_number_per_worm_pixel, im_intensity, im_size, im_index,
                  fns, skipped=[]):
     # assert(len(fns)==len(skipped)+len(im_number_per_worm_pixel))
     with open(fn, 'w') as f:
-        f.write('Number of inclusions per worm pixels Mean: %f SD: %f SEM: %f\n' % (
-                np.mean(im_number_per_worm_pixel),
-                np.std(im_number_per_worm_pixel),
-                sem(im_number_per_worm_pixel)))
+        f.write('Number of inclusions per worm pixels Mean:' +
+                ' %f SD: %f SEM: %f\n' % (
+                    np.mean(im_number_per_worm_pixel),
+                    np.std(im_number_per_worm_pixel),
+                    sem(im_number_per_worm_pixel)))
         f.write('Inclusions intensity Mean: %f SD: %f SEM: %f\n' % (
             np.mean(im_intensity),
             np.std(im_intensity),
@@ -113,7 +122,6 @@ def writeSummary(fn, im_number_per_worm_pixel, im_intensity, im_size, im_index,
             f.write(
                     '%d\t%d\t%f\t%f\t%f\n' %
                     (*idx, num, intens, size))
-#%
 
 
 def saveInclusions(im, labels, maskWorm, imagesFolder, fn, i, um2px2ratio=1,
@@ -157,11 +165,11 @@ def saveInclusions(im, labels, maskWorm, imagesFolder, fn, i, um2px2ratio=1,
         plt.close()
 
         # plot detected inclusions
-        #coordinates = peak_local_max(im, min_distance=20)
+        # coordinates = peak_local_max(im, min_distance=20)
         f = figure()
         imshow(labels)
         imshow(maskWorm, alpha=.5)
-        #plot(coordinates[:, 1], coordinates[:, 0], 'w.')
+        # plot(coordinates[:, 1], coordinates[:, 0], 'w.')
         plt.title(
             "%d inclusions, mean = %.2f" %
             (nl, intensity_inclusions.mean()))
@@ -183,16 +191,16 @@ def saveInclusions(im, labels, maskWorm, imagesFolder, fn, i, um2px2ratio=1,
         plt.savefig(imagesFolder + '_sizeHistogram')
         plt.close()
 
-    writeFileInfos(os.path.splitext(fn)[0] + "_{}.txt".format(j), 
+    writeFileInfos(os.path.splitext(fn)[0] + "_{}.txt".format(j),
                    intensity_inclusions, size_inclusions, prct)
 
 
-if __name__ is '__main__':
+if __name__ == '__main__':
     for folder in glob(folders):
-        if folder[-1] is not '/':
+        if folder[-1] != '/':
             folder += '/'
         imagesFolder = folder + 'images_script/'
-        #% Load images
+        # Load images
         fns = sorted(glob(folder + files))
 
         im_number_per_worm_pixel = []
@@ -219,8 +227,9 @@ if __name__ is '__main__':
             # Get the labels
             labels, nl = msr.label(maskIncl)
 
-            saveInclusions(im, labels, maskWorm, imagesFolder, fn, i, um2px2ratio,
-                           im_number_per_worm_pixel, im_intensity, im_size)
+            saveInclusions(
+                im, labels, maskWorm, imagesFolder, fn, i, um2px2ratio,
+                im_number_per_worm_pixel, im_intensity, im_size)
 
         writeSummary(
             folder +
@@ -229,84 +238,3 @@ if __name__ is '__main__':
             im_intensity,
             im_size,
             fns)
-
-
-# def getMasks(im):
-#
-#        #Cast to float
-#        im=np.asarray(im,dtype=float)
-#
-#        #Get edges images
-#        edgesWorms,angleEdges=Scharr_edge(cv2.GaussianBlur(im,(filtR,filtR),0))
-#        #Get most commun value (noise)
-#        noiseLevel=np.bincount(np.ravel(np.array(edgesWorms,dtype=int))).argmax()
-#        #Test thresholds
-#        testTresh=np.exp(np.linspace(np.log(1),np.log(edgesWorms.max()),100))
-#        #Compute number of zones for each test threshold
-#        N=np.zeros(testTresh.shape)
-#        for i,tresh in enumerate(testTresh):
-#            a,nl= msr.label(edgesWorms>tresh)
-#            N[i]=nl
-#        N+=1#for loglog plot
-#
-#        smoothN=gfilter(N,2)
-#
-#        noiseArg=np.argmax(N)
-#        wormArg=(np.diff(smoothN[noiseArg+1:])>0).argmax()+noiseArg+1
-#        inclArg=np.argmax(N[wormArg:])+wormArg
-#        inclArg=np.argwhere(np.diff(smoothN,2)<0)[-1]+1
-#
-#        wormThresh=testTresh[wormArg]
-#        inclThresh=testTresh[inclArg]#/2
-#
-#
-#
-#        figure()
-#        plt.loglog(testTresh,N,'x-')
-#        plt.loglog(testTresh,smoothN)
-#        plot([wormThresh,wormThresh],[N.min(),N.max()])
-#        plot([inclThresh,inclThresh],[N.min(),N.max()])
-#
-#
-#        maskBg=edgesWorms<wormThresh
-#
-#        #Plus holes in worm
-#        maskBg=cv2.morphologyEx(np.asarray(maskBg,dtype='uint8'),
-#                                cv2.MORPH_OPEN,
-#                                cv2.getStructuringElement(
-#                                        cv2.MORPH_ELLIPSE,(11,11)))
-#        listHoles= msr.label(maskBg)[0]
-#        intHoles=msr.mean(im,listHoles,range(1,listHoles.max()+1))
-#        sizeHoles=np.bincount(np.ravel(listHoles))[1:]
-#
-#        biggestHoleArg=np.argmax(sizeHoles)
-#
-#        bgHolesArg=np.argwhere(intHoles<intHoles[biggestHoleArg]*2)
-#
-#        res=np.zeros(im.shape)
-#        for i in bgHolesArg:
-#            res+=(listHoles==i+1)
-#
-#        maskWorm=1-res
-#
-#        if simpleBG:
-#            maskWorm=im>bgThreshold(im)
-#
-#        figure()
-#        imshow(maskWorm)
-#
-#        maskIncl=edgesWorms>inclThresh
-#
-#
-#        if fillHoles:
-#            mwlabel,nmw=msr.label(maskIncl)
-#            for i in range(1,nmw+1):
-#                if np.any(mwlabel==i):
-#                    mwlabel[convex_hull_image(mwlabel==i)]=i
-#
-#            maskIncl=mwlabel>0
-#        figure()
-#        imshow(maskIncl)
-#        figure()
-#        imshow(edgesWorms)
-#        return maskWorm, maskIncl
